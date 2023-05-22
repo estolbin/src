@@ -10,7 +10,10 @@
 				"-g",
 				"${workspaceFolder}\\*.cpp",
 				"-o",
-				"${fileDirname}\\${fileBasenameNoExtension}.exe"			],
+				"${fileDirname}\\${fileBasenameNoExtension}.exe",
+				"-lgdi32",
+				"-mwindows"
+			],
 			"options": {
 				"cwd": "${workspaceFolder}"
 			},

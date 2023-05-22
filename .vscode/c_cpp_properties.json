@@ -16,7 +16,8 @@
             "compilerPath": "C:/MinGW/bin/g++.exe",
             "compilerArgs": [
                 "-std=c++11",
-                "-pthread"
+                "-pthread",
+                "-mwindows"
             ]
         }
     ],

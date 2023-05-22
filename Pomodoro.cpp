@@ -12,6 +12,7 @@ Pomodoro::Pomodoro(int time, TaskType type)
 {
     this->time = std::chrono::milliseconds(time * 60000);
     this->type = type;
+    this->pomodoroTime = PomodoroTime();
 }
 const std::chrono::milliseconds Pomodoro::getTime() {
     return time;
@@ -26,6 +27,7 @@ const std::string Pomodoro::typePomodoro()
 }
 
 void Pomodoro::startTimer() {
+    this->pomodoroTime.setTime(this->time);
     auto fut = std::async(std::launch::async,  [this] {this->task();});
 }
 
@@ -37,16 +39,21 @@ void Pomodoro::setNewPomodoro(int time, TaskType type) {
 void Pomodoro::task() {
     auto time = this->getTime();
     auto now = std::chrono::high_resolution_clock::now();
-    PomodoroTime t = PomodoroTime();
+    //PomodoroTime t = PomodoroTime();
     std::chrono::milliseconds interval(1000);
     
     while (std::chrono::high_resolution_clock::now() - now < time) {
-        clearConsole();
+        //clearConsole();
         auto temp = time - std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
-        t.setTime(temp);
-        std::cout << "Remain: " << this->typePomodoro() << " " << t.getTime() << " sec." << std::endl;
+        this->pomodoroTime.setTime(temp);
+        std::cout << "Remain: " << this->typePomodoro() << " " << this->pomodoroTime.getTime() << " sec." << std::endl;
         std::this_thread::sleep_for(interval);
     }
 
     std::cout << "Time is up." << std::endl;    
+}
+
+std::string Pomodoro::getPomodoroTime()
+{
+    return this->pomodoroTime.getTime();
 }

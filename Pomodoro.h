@@ -3,6 +3,7 @@
 #include <string>
 #include <future>
 #include <iostream>
+#include "PomodoroTime.h"
 
 enum class TaskType {
     WORK,
@@ -14,6 +15,7 @@ class Pomodoro {
 private:
     std::chrono::milliseconds time;
     TaskType type;
+    PomodoroTime pomodoroTime;
 public:
     Pomodoro(int time, TaskType type);
     const std::chrono::milliseconds getTime();
@@ -23,4 +25,5 @@ public:
     ~Pomodoro() {}
     void setNewPomodoro(int time, TaskType type);
     void task();
+    std::string getPomodoroTime();
 };
