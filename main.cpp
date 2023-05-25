@@ -1,15 +1,15 @@
 #include <windows.h>
-#include "PomodoroTime.h"
-#include "Pomodoro.h"
+#include <windowsx.h>
+#include <tchar.h>
 
 #define ID_TIMER 100
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+TCHAR szClassName[] = TEXT("Pomodoro");
 
-Pomodoro pomodoro = Pomodoro(1, TaskType::WORK);
-RECT clientRect;
+int Timer1 = 1;
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,  LPSTR lpwCmdLine, int nCmdShow)
+INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,  LPSTR lpwCmdLine, int nCmdShow)
 {
     HWND hWnd;
     MSG msg;
@@ -34,15 +34,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,  LPSTR lpwCmdLine, int nCmdSh
     }
 
     hWnd = CreateWindowEx(0,"Pomodoro", "Pomodoro", WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+        300, 200, CW_USEDEFAULT, CW_USEDEFAULT,
         nullptr, nullptr, hInstance, nullptr);
 
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
-
-    GetClientRect(hWnd, &clientRect);
-
-    SetTimer(hWnd, ID_TIMER, 1000, NULL);
 
     while (GetMessage(&msg, nullptr, 0, 0))
     {
@@ -55,40 +51,54 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,  LPSTR lpwCmdLine, int nCmdSh
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    HDC hdc; 
-    PAINTSTRUCT ps; 
-    char szBuffer[256];
-    bool running = false;
+    static int x = 10, y = 10;
+    static char * symbol = new char[100]; 
+    static int size = 0;
+    HDC hdc;
+    PAINTSTRUCT ps;
+    RECT clientRect;
+    RECT rect{x, y, x + 100, y + 100};
+    // HFONT hFont = CreateFontW(90, 0, 0, 0, 0, 0, 0, 0,
+    //     DEFAULT_CHARSET, 0, 0, 0, 0, L"Arial Bold");
+
 
     switch (message)
     {
-        
-    case WM_CREATE:
-
-        break;
     case WM_PAINT:
         {
-            if(!running)
-            {
-                running = true;
-                pomodoro.startTimer();
-            }
+
             hdc = BeginPaint (hWnd, &ps); 
-            wsprintf (szBuffer, "Pomodoro %s %s", pomodoro.typePomodoro().c_str(),pomodoro.getPomodoroTime().c_str()); 
-            DrawText (hdc, szBuffer, -1, &clientRect, DT_LEFT); 
+            GetClientRect(hWnd, &clientRect);
+            if(size > 0)
+                DrawText(hdc, symbol, size, &clientRect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+
             EndPaint (hWnd, &ps)  ;  
         }
         break;
 
-    case WM_TIMER:
-        InvalidateRect(hWnd, NULL, FALSE);
-        break;
-
     case WM_DESTROY:
-        KillTimer(hWnd, ID_TIMER);
         PostQuitMessage(0);
         break;
-
+    case WM_KEYDOWN:
+        if(wParam == VK_ESCAPE)
+                PostQuitMessage(0);
+        break;
+    case WM_CHAR:
+        if(wParam == VK_RETURN)
+            size = 0;
+        else if (wParam == VK_BACK)
+        {
+            if(size > 0)
+                size--;
+            InvalidateRect(hWnd, nullptr, TRUE);
+        }
+        else 
+        {
+            symbol[size] = (wchar_t)wParam;
+            size++;
+        }
+        InvalidateRect(hWnd, nullptr, TRUE);
+        break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
