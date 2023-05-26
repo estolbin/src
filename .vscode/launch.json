@@ -5,7 +5,10 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
-            "args": [],
+            "args": [
+                "-lgdi32",
+                "-mwindows"
+            ],
             "stopAtEntry": false,
             "cwd": "C:\\MinGW\\bin",
             "environment": [],
