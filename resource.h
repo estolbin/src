@@ -1,9 +1,5 @@
 #define ID_TIMER 100
 #define ID_TIMER_POMODORO 101
 #define ID_TIMER_REST 102
-#define WINDOW_WIDTH 300
-#define WINDOW_HEIGHT 300
-#define FONT_SIZE 100
-#define FONT_SIZE_BUTTON 25
 #define IDI_ICON_M 256
 #define IDI_ICON_SM 257  
