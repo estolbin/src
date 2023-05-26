@@ -16,11 +16,12 @@
 #endif
 
 // Add buttons to the window
-void addButtons(HWND hWnd);
+void add_buttons(HWND hWnd);
 void loadSettings();
 void saveSettings();
 bool directoryExists(std::string path);
 std::string getFileName();
+void timerEnded(HWND hParent, Timer& timer);
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 TCHAR szClassName[] = TEXT("Pomodoro");
@@ -104,7 +105,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_CREATE:
-        addButtons(hWnd);
+        add_buttons(hWnd);
         break;
     case WM_COMMAND:
     {
@@ -139,7 +140,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_TIMER:
         timer.update();
         if (!timer.running())
+        {
             KillTimer(hWnd, ID_TIMER);
+            timerEnded(hWnd, timer);
+        }
         wsprintf(text, "%s", timer.get_time().c_str());
         InvalidateRect(hWnd, nullptr, TRUE);
         break;
@@ -160,24 +164,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-void addButtons(HWND hWnd)
+void add_buttons(HWND hwnd)
 {
+    int button_x = 25, button_y = 200;
+    HWND pomodoro_button;
+    HWND rest_button;
 
-    int x = 25, y = 200;
-    HWND hButton;
-    HWND hButton2;
-    HWND hButton3;
+    pomodoro_button = CreateWindow(TEXT("BUTTON"), TEXT("Pomodoro"),
+        WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, button_x, button_y, 120, 50,
+        hwnd, (HMENU)ID_TIMER_POMODORO, nullptr, nullptr);
+    button_x += 120;
 
-    hButton = CreateWindow(TEXT("BUTTON"), TEXT("Pomodoro"), WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, x, y, 120, 50, hWnd, (HMENU)ID_TIMER_POMODORO, nullptr, nullptr);
-    x += 120;
+    rest_button = CreateWindow(TEXT("BUTTON"), TEXT("Rest"),
+        WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, button_x, button_y, 120, 50,
+        hwnd, (HMENU)ID_TIMER_REST, nullptr, nullptr);
 
-    hButton2 = CreateWindow(TEXT("BUTTON"), TEXT("Rest"), WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON, x, y, 120, 50, hWnd, (HMENU)ID_TIMER_REST, nullptr, nullptr);
+    SendMessage(pomodoro_button, WM_SETFONT, (WPARAM)hFontButton, 0);
+    SendMessage(rest_button, WM_SETFONT, (WPARAM)hFontButton, 0);
 
-    SendMessage(hButton, WM_SETFONT, (WPARAM)hFontButton, 0);
-    SendMessage(hButton2, WM_SETFONT, (WPARAM)hFontButton, 0);
-
-    InvalidateRect(hWnd, nullptr, TRUE);
+    InvalidateRect(hwnd, nullptr, TRUE);
 }
+
 
 void loadSettings()
 {
@@ -186,27 +193,31 @@ void loadSettings()
     settings.clear();
 
     std::ifstream iniFile(file);
-    if(!iniFile.is_open())
+    if (!iniFile.is_open())
         return;
 
-    if (iniFile.is_open())
+    std::string line;
+    while (std::getline(iniFile, line))
     {
-        std::string line;
-        while (std::getline(iniFile, line))
-        {
-            std::string key = line.substr(0, line.find('='));
-            std::string value = line.substr(line.find('=') + 1);
-            settings[key] = value;
-        }
+        if (line.empty() || line[0] == ';' || line[0] == '#')
+            continue;
+
+        auto delimiterPos = line.find('=');
+        if (delimiterPos == std::string::npos)
+            continue;
+
+        auto key = line.substr(0, delimiterPos);
+        auto value = line.substr(delimiterPos + 1);
+
+        settings[key] = value;
     }
 
     iniFile.close();
 
-    FONT_SIZE = atoi(settings["FONT_SIZE"].c_str());
-    FONT_SIZE_BUTTON = atoi(settings["FONT_SIZE_BUTTON"].c_str());
-    WINDOW_HEIGHT = atoi(settings["WINDOW_HEIGHT"].c_str());
-    WINDOW_WIDTH = atoi(settings["WINDOW_WIDTH"].c_str());
-
+    FONT_SIZE = std::stoi(settings["FONT_SIZE"], nullptr, 10);
+    FONT_SIZE_BUTTON = std::stoi(settings["FONT_SIZE_BUTTON"], nullptr, 10);
+    WINDOW_HEIGHT = std::stoi(settings["WINDOW_HEIGHT"], nullptr, 10);
+    WINDOW_WIDTH = std::stoi(settings["WINDOW_WIDTH"], nullptr, 10);
 }
 
 void saveSettings()
@@ -242,4 +253,8 @@ std::string getFileName()
     std::string file = folder + "\\settings.ini";
 
     return file;
+}
+
+void timerEnded(HWND hWnd, Timer timer)
+{
 }
