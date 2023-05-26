@@ -3,9 +3,14 @@
 #include <tchar.h>
 
 #define ID_TIMER 100
+#define WINDOW_WIDTH 500
+#define WINDOW_HEIGHT 500
+#define FONT_SIZE 50
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 TCHAR szClassName[] = TEXT("Pomodoro");
+
+static HFONT hFont = CreateFont(FONT_SIZE, 0, 0, 0, 0, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, TEXT("Arial"));
 
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,  LPSTR lpwCmdLine, int nCmdShow)
 {
@@ -31,9 +36,18 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,  LPSTR lpwCmdLine, int nCmdSh
         return 0;
     }
 
-    hWnd = CreateWindowEx(0,"Pomodoro", "Pomodoro", WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+    hWnd = CreateWindowEx(0,szClassName, TEXT("Pomodoro"), WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, WINDOW_WIDTH, WINDOW_HEIGHT,
         nullptr, nullptr, hInstance, nullptr);
+
+    if(!hWnd)
+    {
+        MessageBox(nullptr, TEXT("Failed to create window"), TEXT("Error"), MB_OK);
+        return 0;
+    }
+
+    
+    SendMessage(hWnd, WM_SETFONT, (WPARAM)hFont, 0);
 
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
@@ -50,28 +64,29 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE,  LPSTR lpwCmdLine, int nCmdSh
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     static int x = 10, y = 10;
-    static char * symbol = new char[100]; 
-    static int size = 0;
+    static char symbol[100]; 
+    static int symbolSize = 0;
     static int time = 0;
     static char text[255];
     HDC hdc;
     PAINTSTRUCT ps;
     RECT clientRect;
     RECT rect{x, y, x + 1000, y + 1000};
-    HFONT hFont = CreateFont(100, 0, 0, 0, 0, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, TEXT("Arial"));
 
     switch (message)
     {
     case WM_PAINT:
         {
 
-            hdc = BeginPaint (hWnd, &ps); 
+            hdc = GetDC(hWnd);
+            //hdc = BeginPaint (hWnd, &ps); 
             SelectObject(hdc, hFont);
             GetClientRect(hWnd, &clientRect);
-            if(size > 0)
-                DrawText(hdc, symbol, size, &clientRect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+            if(symbolSize > 0)
+                DrawText(hdc, symbol, symbolSize, &clientRect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
             DrawText(hdc, text, 15, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
-            EndPaint (hWnd, &ps)  ;  
+            //EndPaint (hWnd, &ps)  ;  
+            ReleaseDC(hWnd, hdc);
         }
         break;
     case WM_TIMER:
@@ -81,31 +96,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         InvalidateRect(hWnd, nullptr, TRUE);
         break;
     case WM_DESTROY:
+        KillTimer(hWnd, ID_TIMER);
         PostQuitMessage(0);
         break;
     case WM_SETFONT:
         SendMessage(hWnd, WM_SETFONT, (WPARAM)hFont, 0);
         break;
     case WM_KEYDOWN:
-        if(wParam == VK_ESCAPE)
-                PostQuitMessage(0);
+        if(wParam == VK_ESCAPE) PostQuitMessage(0);
         break;
     case WM_CHAR:
         if(wParam == VK_RETURN)
         {
-            size = 0;
+            symbolSize = 0;
             SetTimer(hWnd, ID_TIMER, 1000, nullptr);            
         }
         else if (wParam == VK_BACK)
         {
-            if(size > 0)
-                size--;
+            if(symbolSize > 0) symbolSize--;
             InvalidateRect(hWnd, nullptr, TRUE);
         }
         else 
         {
-            symbol[size] = (wchar_t)wParam;
-            size++;
+            symbol[symbolSize] = (wchar_t)wParam;
+            symbolSize++;
         }
         InvalidateRect(hWnd, nullptr, TRUE);
         break;
@@ -115,3 +129,4 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     return 0;
 }
+
