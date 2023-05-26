@@ -1,0 +1,30 @@
+#include "resource.h"
+
+APPICONS    ICON "tomato.ico"
+IDI_ICON_M  ICON "tomato.ico"
+IDI_ICON_SM ICON "tomato16.ico"
+
+
+1 VERSIONINFO
+FILEVERSION     1,0,0,0
+PRODUCTVERSION  1,0,0,0
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "080904E4"
+    BEGIN
+      VALUE "CompanyName", "noComp"
+      VALUE "FileDescription", "Very simple Pomodoro timer"
+      VALUE "FileVersion", "1.0"
+      VALUE "InternalName", "tamata"
+      VALUE "LegalCopyright", "Eug"
+      VALUE "OriginalFilename", "tamata.exe"
+      VALUE "ProductName", "Tamata"
+      VALUE "ProductVersion", "1.0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x809, 1252
+  END
+END

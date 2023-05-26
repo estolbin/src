@@ -1,0 +1,5 @@
+#define ID_TIMER 100
+#define ID_TIMER_POMODORO 101
+#define ID_TIMER_REST 102
+#define IDI_ICON_M 256
+#define IDI_ICON_SM 257  
