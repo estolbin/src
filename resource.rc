@@ -4,6 +4,26 @@ APPICONS    ICON "tomato.ico"
 IDI_ICON_M  ICON "tomato.ico"
 IDI_ICON_SM ICON "tomato16.ico"
 
+IDR_MENU MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM  "&Load settings",ID_FILE_LOAD
+        MENUITEM  "&Save settings", ID_FILE_SAVE
+        MENUITEM  "E&xit", ID_FILE_EXIT
+    END
+
+    POPUP "&Timer"
+    BEGIN
+        MENUITEM "New Pomodoro", ID_TIMER_POMODORO
+        MENUITEM "New ShortBreak", ID_TIMER_REST
+    END
+
+    POPUP "&Stuff"
+    BEGIN
+        MENUITEM "&Always on top", ID_ALWAYS_TOP
+    END
+END
 
 1 VERSIONINFO
 FILEVERSION     1,0,0,0

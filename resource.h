@@ -3,3 +3,10 @@
 #define ID_TIMER_REST 102
 #define IDI_ICON_M 256
 #define IDI_ICON_SM 257  
+#define IDR_MENU 103
+
+#define ID_FILE_EXIT 204
+#define ID_STUFF_GO 205
+#define ID_ALWAYS_TOP 206
+#define ID_FILE_SAVE 207
+#define ID_FILE_LOAD 208

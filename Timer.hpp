@@ -14,6 +14,7 @@ private:
     int minutes;
     int seconds;
     TimerState state;
+    TimerState lastState;
     bool is_running;
 
     void decrement();
@@ -61,6 +62,7 @@ void Timer::decrement() {
 void Timer::update() {
     if (minutes == 0 && seconds == 0) {
         is_running = false;
+        lastState = state;
     } else {
         decrement();
     }
@@ -106,6 +108,6 @@ std::string Timer::get_state()
         }
 
     } else {
-        return "Not running";
+        return (lastState == TimerState::Pomodoro ? "Pomodoro" : "Short Break");
     }
 }
