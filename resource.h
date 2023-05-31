@@ -10,3 +10,12 @@
 #define ID_ALWAYS_TOP 206
 #define ID_FILE_SAVE 207
 #define ID_FILE_LOAD 208
+
+#define IDD_FONT_DLG 209
+#define IDD_BTN_DLG 210
+#define ID_EDIT_FONT 211
+#define ID_BUTTON_FONT 212
+
+// font dialog
+#define ID_FONT_OK 510
+#define ID_FONT_CANCEL 511

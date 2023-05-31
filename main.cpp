@@ -24,9 +24,14 @@ bool directoryExists(const std::string &path);
 std::string getSettingsFileName();
 void timerEnded(HWND hParent, Timer &timer);
 void update_buttons(HWND hwnd);
+void on_top(HWND hwnd);
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 static const TCHAR szClassName[] = TEXT("Pomodoro");
+
+LRESULT CALLBACK FontDialogProc(HWND, UINT, WPARAM, LPARAM);
+
+static HINSTANCE g_hInstance;
 
 int FONT_SIZE = 100;
 int FONT_SIZE_BUTTON = 25;
@@ -37,10 +42,12 @@ int BUTTON_HEIGHT = 50;
 
 static HFONT hFont;
 static HFONT hFontButton;
+static HFONT hDialogFont;
 
 static Timer timer(25, 0, TimerState::Pomodoro);
 
 static bool isMessageTimer = false;
+static bool bOnTopEnabled = false;
 
 static HWND hButtonPomodoro;
 static HWND hButtonRest;
@@ -69,6 +76,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpwCmdLine, int nCmdSho
 
     hFont = CreateFont(FONT_SIZE, 0, 0, 0, 0, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, TEXT("Arial"));
     hFontButton = CreateFont(FONT_SIZE_BUTTON, 0, 0, 0, 0, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, TEXT("Arial"));
+    hDialogFont = CreateFont(9, 0, 0, 0, 0, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, TEXT("Arial"));
 
     if (!RegisterClassEx(&wc))
     {
@@ -88,10 +96,13 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpwCmdLine, int nCmdSho
 
     SendMessage(hWnd, WM_SETFONT, (WPARAM)hFont, 0);
 
+    g_hInstance = hInstance;
+
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
 
-    SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE);
+    SetWindowPos(hWnd, bOnTopEnabled ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE);
+    CheckMenuItem(GetMenu(hWnd), ID_ALWAYS_TOP, bOnTopEnabled ? MF_CHECKED : MF_UNCHECKED);
 
     while (GetMessage(&msg, nullptr, 0, 0))
     {
@@ -145,10 +156,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             loadSettings();
             InvalidateRect(hWnd, nullptr, TRUE);
             break;
+        case ID_ALWAYS_TOP:
+            on_top(hWnd);
+            break;
+        case IDD_FONT_DLG:
+            DialogBox(g_hInstance, MAKEINTRESOURCE(IDD_FONT_DLG), hWnd, FontDialogProc);
+            break;
+        case IDD_BTN_DLG:
+            
+            break;
         case ID_FILE_SAVE:
             saveSettings();
             break;
-        
+
         }
     }
     break;
@@ -163,7 +183,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         stateRect.left = x;
         stateRect.top = y;
         stateRect.right = x + ((clientRect.right - clientRect.left) - 20);
-        stateRect.bottom = y + ((clientRect.bottom - clientRect.top) / 3);
+        stateRect.bottom = ((clientRect.bottom - clientRect.top) / 3);
         DrawText(hdc, state, strlen(state), &stateRect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
         EndPaint(hWnd, &ps);
     }
@@ -234,7 +254,7 @@ void update_buttons(HWND hwnd)
 {
     int w = BUTTON_WIDTH;
     int h = BUTTON_HEIGHT;
-    int y = WINDOW_HEIGHT - h - 20;
+    int y = WINDOW_HEIGHT - h - 15;
     int x = WINDOW_WIDTH / 2 - w;
 
     SetWindowPos(GetDlgItem(hwnd, ID_TIMER_POMODORO), 0, x, y, w, h, SWP_SHOWWINDOW);
@@ -278,6 +298,9 @@ void loadSettings()
         BUTTON_HEIGHT = std::stoi(settings["BUTTON_HEIGHT"], nullptr, 10);
     if (settings.find("BUTTON_WIDTH") != settings.end())
         BUTTON_WIDTH = std::stoi(settings["BUTTON_WIDTH"], nullptr, 10);
+    if (settings.find("ON_TOP") != settings.end())
+        bOnTopEnabled = std::stoi(settings["ON_TOP"], nullptr, 10);
+
 }
 
 void saveSettings()
@@ -293,6 +316,7 @@ void saveSettings()
         iniFile << "WINDOW_WIDTH=" << WINDOW_WIDTH << std::endl;
         iniFile << "BUTTON_HEIGHT=" << BUTTON_HEIGHT << std::endl;
         iniFile << "BUTTON_WIDTH=" << BUTTON_WIDTH << std::endl;
+        iniFile << "ON_TOP=" << bOnTopEnabled << std::endl;
     }
     iniFile.close();
 }
@@ -322,3 +346,42 @@ void timerEnded(HWND hWnd, Timer &timer)
     std::string alert = _T("Timer ") + timer.get_state() + _T(" ended!");
     MessageBox(hWnd, TEXT(alert.c_str()), TEXT("Pomodoro"), MB_OK);
 }
+
+void on_top(HWND hWnd)
+{
+    bOnTopEnabled = !bOnTopEnabled;
+    SetWindowPos(hWnd, bOnTopEnabled ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+    CheckMenuItem(GetMenu(hWnd), ID_ALWAYS_TOP, bOnTopEnabled ? MF_CHECKED : MF_UNCHECKED);
+}
+
+
+LRESULT CALLBACK FontDialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg)
+    {
+    case WM_INITDIALOG:
+        SetDlgItemInt(hwnd, ID_EDIT_FONT,FONT_SIZE, 10);
+        SetDlgItemInt(hwnd, ID_BUTTON_FONT, FONT_SIZE_BUTTON, 10);
+        return 0;
+    case WM_COMMAND:
+        switch(LOWORD(wParam))
+        {
+            case ID_FONT_CANCEL:
+                EndDialog(hwnd, 0);
+                break;
+            case ID_FONT_OK:
+                FONT_SIZE = (int)GetDlgItemInt(hwnd, ID_EDIT_FONT, nullptr, 10);
+                FONT_SIZE_BUTTON = (int)GetDlgItemInt(hwnd, ID_BUTTON_FONT, nullptr, 10);
+                saveSettings();
+                EndDialog(hwnd, LOWORD(wParam));
+                break;
+            default:
+                return DefWindowProc(hwnd, msg, wParam, lParam);
+        }
+        break;
+    }
+    return 0;
+    
+}
+
+

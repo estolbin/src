@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "resource.h"
 
 APPICONS    ICON "tomato.ico"
@@ -15,13 +16,15 @@ BEGIN
 
     POPUP "&Timer"
     BEGIN
-        MENUITEM "New Pomodoro", ID_TIMER_POMODORO
-        MENUITEM "New ShortBreak", ID_TIMER_REST
+        MENUITEM "Pomodoro", ID_TIMER_POMODORO
+        MENUITEM "Break", ID_TIMER_REST
     END
 
     POPUP "&Stuff"
     BEGIN
         MENUITEM "&Always on top", ID_ALWAYS_TOP
+        MENUITEM "Font dialog", IDD_FONT_DLG
+        MENUITEM "Buttons settings", IDD_BTN_DLG
     END
 END
 
@@ -47,4 +50,18 @@ BEGIN
   BEGIN
     VALUE "Translation", 0x809, 1252
   END
+END
+
+
+IDD_FONT_DLG DIALOG 0, 0, 157, 71
+STYLE WS_POPUP|WS_CAPTION|DS_MODALFRAME
+CAPTION "Font settings"
+FONT 9, "Arial"
+BEGIN
+    PUSHBUTTON      "Cancel", ID_FONT_CANCEL, 99, 52, 50, 14, 0, WS_EX_LEFT
+    DEFPUSHBUTTON   "OK", ID_FONT_OK, 46, 52, 50, 14, 0, WS_EX_LEFT
+    LTEXT           "Font size", 500, 10, 10, 32, 9, SS_LEFT, WS_EX_LEFT
+    LTEXT           "Button font size", 501, 10, 29, 53, 9, SS_LEFT, WS_EX_LEFT
+    EDITTEXT        ID_EDIT_FONT, 115, 5, 40, 14, ES_AUTOHSCROLL, WS_EX_LEFT
+    EDITTEXT        ID_BUTTON_FONT, 115, 25, 40, 14, ES_AUTOHSCROLL, WS_EX_LEFT
 END
